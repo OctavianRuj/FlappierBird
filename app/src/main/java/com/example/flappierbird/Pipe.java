@@ -9,28 +9,38 @@ import java.util.Random;
 public class Pipe {
     private float x; // Horizontal position
     private final int width = 340;
-    private final int pipeHeight = 1800;
+    private final int pipeHeight = 1850;
     private final float gapHeight = 350;
     private final float speed = 13;
 
     private float screenHeight;
     private float yOffset; // shifts both pipes vertically
 
-    private Bitmap topPipe, bottomPipe;
-    private Bitmap originalTop, originalBottom;
+    private static Bitmap topPipe, bottomPipe;
+    private static Bitmap originalTop, originalBottom;
+    private boolean scored = false;
+
 
     public Pipe(float screenWidth, float screenHeight, Context context) {
         this.x = screenWidth;
         this.screenHeight = screenHeight;
 
         // Load original bitmaps
-        originalTop = BitmapFactory.decodeResource(context.getResources(), R.drawable.toppipe);
-        originalBottom = BitmapFactory.decodeResource(context.getResources(), R.drawable.bottompipe);
+        if (originalTop == null) {
+            originalTop = BitmapFactory.decodeResource(context.getResources(), R.drawable.toppipe);
+        }
+        if (originalBottom == null) {
+            originalBottom = BitmapFactory.decodeResource(context.getResources(), R.drawable.bottompipe);
+        }
 
         // Scale them once (same size always)
-        topPipe = Bitmap.createScaledBitmap(originalTop, width, pipeHeight, false);
-        bottomPipe = Bitmap.createScaledBitmap(originalBottom, width, pipeHeight, false);
+        if (topPipe == null) {
+            topPipe = Bitmap.createScaledBitmap(originalTop, width, pipeHeight, false);
+        }
+        if (bottomPipe== null) {
+            bottomPipe = Bitmap.createScaledBitmap(originalBottom, width, pipeHeight, false);
 
+        }
         randomizeHeights();
     }
 
@@ -38,8 +48,8 @@ public class Pipe {
         Random random = new Random();
 
         // Choose a random Y position for the center of the gap
-        float minGapY = gapHeight / 2 + 200;
-        float maxGapY = screenHeight - gapHeight / 2 - 200;
+        float minGapY = gapHeight / 2 + 250;
+        float maxGapY = screenHeight - gapHeight / 2 - 250;
         float gapCenterY = random.nextInt((int)(maxGapY - minGapY)) + minGapY;
 
         // Now place the top pipe so it ends at the top of the gap
@@ -53,6 +63,7 @@ public class Pipe {
         if (x + width < 0) {
             x = screenHeight + width;
             randomizeHeights();
+            scored = false;
         }
     }
 
@@ -89,4 +100,12 @@ public class Pipe {
     public int getPipeHeight() {
         return pipeHeight;
     }
+    public boolean getScored() {
+        return scored;
+    }
+
+    public void setScored(boolean scored) {
+        this.scored = scored;
+    }
+
 }

@@ -13,7 +13,11 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback {
     private GameThread thread;
     private Bird bird;
     private boolean gameStart=false;
-    private Pipe[] pipes;
+    private Pipe[] pipes= new Pipe[3];
+    private int score;
+    private int bestScore;
+    private boolean pipesInitialized=false;
+
 
 
 
@@ -33,11 +37,16 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback {
 
     @Override
     public void surfaceCreated(SurfaceHolder holder) {
-       resetPipes();
-
+        if (!pipesInitialized) {
+            resetPipes();
+            pipesInitialized = true;
+        }
         // Called when the surface is ready — start the game loop thread
-        thread.setRunning(true);
-        thread.start();
+        if (thread == null || !thread.isAlive()) {
+            thread = new GameThread(getHolder(), this);
+            thread.setRunning(true);
+            thread.start();
+        }
 
     }
 
@@ -58,19 +67,21 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback {
 
     @Override
     public void surfaceChanged(SurfaceHolder holder, int format, int width, int height) {
-        // Not used for now
+        //not used
     }
     public void update() {
         if(gameStart) {
             bird.update();
             for (Pipe pipe : pipes) {
                 pipe.update();
+                scoreIncrement(pipe);
                 if(checkCollision(pipe)) resetBird();
             }
             if (gameOver(bird.getY())) {
                 resetBird();
             }
         }
+        System.out.println("score is"+score);
     }
     @Override
     public void draw(Canvas canvas) {
@@ -82,6 +93,7 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback {
             }
             bird.draw(canvas);
         }
+        drawScore(canvas);
     }
     @Override
     public boolean onTouchEvent(MotionEvent event) {
@@ -99,6 +111,7 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback {
     private void resetBird(){
         bird.setY(500);
         resetPipes();
+        score=0;
 
         gameStart = false;
     }
@@ -117,7 +130,7 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback {
         float buffer = 100; // pixels of forgiveness
 
         // Check horizontal overlap
-        boolean inXRange = birdX + birdRadius > pipeX +buffer&& birdX - birdRadius < pipeX + pipeWidth;
+        boolean inXRange = birdX + birdRadius > pipeX +buffer&& birdX - birdRadius < pipeX + pipeWidth-buffer;
 
         // Check vertical collision with buffer (wider gap)
         boolean outOfGap = birdY - birdRadius < (gapTop - buffer) || birdY + birdRadius > (gapBottom + buffer);
@@ -125,7 +138,7 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback {
         return inXRange && outOfGap;
     }
     private void resetPipes(){
-        pipes = new Pipe[3];
+
         int spacing = 900; // distance between pipes
 
         for (int i = 0; i < pipes.length; i++) {
@@ -133,6 +146,26 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback {
             pipes[i] = new Pipe(startX, getHeight(),getContext());
         }
     }
+    private void scoreIncrement(Pipe pipe){
+        if (!pipe.getScored() && bird.getX() > pipe.getX() + pipe.getWidth()) {
+            score++;
+            pipe.setScored(true);  // prevent double counting
+        }
+        if (score>=bestScore) bestScore=score;
+    }
+    private void drawScore(Canvas canvas) {
+        Paint paint = new Paint();
+        paint.setColor(Color.WHITE);
+        paint.setTextSize(80);
+        paint.setFakeBoldText(true);
+
+        // Draw current score
+        canvas.drawText("Score: " + score, 50, 100, paint);
+
+        // Draw best score
+        canvas.drawText("Best: " + bestScore, 50, 200, paint);
+    }
+
 
 
 
