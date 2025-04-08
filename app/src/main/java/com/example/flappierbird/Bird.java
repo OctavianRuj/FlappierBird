@@ -67,4 +67,10 @@ public class Bird {
     public void setY(float y) {
         this.y = y;
     }
+    public float getX(){
+        return x;
+    }
+    public float getRadius(){
+        return radius;
+    }
 }
