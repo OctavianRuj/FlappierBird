@@ -92,8 +92,10 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback {
                 pipe.draw(canvas);
             }
             bird.draw(canvas);
+            if(!gameStart) drawStart(canvas);
+            drawScore(canvas);
         }
-        drawScore(canvas);
+
     }
     @Override
     public boolean onTouchEvent(MotionEvent event) {
@@ -164,6 +166,15 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback {
 
         // Draw best score
         canvas.drawText("Best: " + bestScore, 50, 200, paint);
+    }
+    private void drawStart(Canvas canvas){
+        Paint paint = new Paint();
+        paint.setColor(Color.WHITE);
+        paint.setTextSize(100);
+        paint.setFakeBoldText(true);
+
+        canvas.drawText("Tap to play!",300,800, paint);
+
     }
 
 
